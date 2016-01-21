@@ -35,9 +35,19 @@ class HTTPRequest(object):
 class HTTPClient(object):
     #def get_host_port(self,url):
 
+    def parseUrl(self, url):
+        re.sub('https','',url)
+        re.search('(http|https)://(\S+?)/', string)
+        
+
     def connect(self, host, port):
+        #from
+        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        clientSocket.connect((host,port))
+        return clientSocket
+        
         # use sockets!
-        return None
+        #return None
 
     def get_code(self, data):
         return None
@@ -71,6 +81,10 @@ class HTTPClient(object):
         return HTTPRequest(code, body)
 
     def command(self, url, command="GET", args=None):
+        #get host
+        #get port
+        #socket = self.connect(
+        #call connect
         if (command == "POST"):
             return self.POST( url, args )
         else:
@@ -85,4 +99,10 @@ if __name__ == "__main__":
     elif (len(sys.argv) == 3):
         print client.command( sys.argv[1], sys.argv[2] )
     else:
-        print client.command( command, sys.argv[1] )    
+        print client.command( command, sys.argv[1] )   
+
+
+# control flow:
+
+# --> command with URL and verb
+# -- 
