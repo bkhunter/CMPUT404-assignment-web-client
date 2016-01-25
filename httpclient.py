@@ -35,18 +35,20 @@ class HTTPResponse(object):
 
 class HTTPClient(object):
     
-    def get_host_port(self,url):
+    def get_host_port_path(self,url):
         strippedUrl = re.sub('(https://)|(http://)','',url,1)
         splitUrl = re.split('/',strippedUrl)
         host = splitUrl[0]
+        splitPath = re.split(host,url)
+        path = splitPath[1]
         if ':' in host:
             splitHost = re.split(':', host)
             host = splitHost[0]
-            port = splitHost[1]
+            port = int(splitHost[1])
         else:
             # port not specified
             port = 80
-        return host,port
+        return host,port,path
 
     def connect(self, host, port):
         #from lab
@@ -78,21 +80,22 @@ class HTTPClient(object):
                 done = not part
         return str(buffer)
 
-    def GET(self, url, args=None):
-        host,port = self.get_host_port(url)
-        print host
-        print
-        print port
-        port = int(port)
-        host = 'www.google.com'
-        port = 80
-        sock = self.connect(host,port)
-        request = "GET / HTTP/1.0\r\n "
-        sock.sendall(request)
+    def makeGetRequest(self,path,host):
+        initLine = "GET "+path+" HTTP/1.1\r\n"
+        hostLine= "Host:"+host+"\r\n"
+        acceptLine= "Accept: */*\r\n"
+        return initLine+hostLine+acceptLine
 
+    def GET(self, url, args=None):
+        host,port,path = self.get_host_port_path(url)
+        print 'host= '+host
+        print 'path= '+path
+        print 'port= '+str(port)
+        sock = self.connect(host,port)
+        request = self.makeGetRequest(path,host)
+        print request
+        sock.sendall(request)
         print self.recvall(sock)
-        
-        
         
         code = 200
         body = ""
