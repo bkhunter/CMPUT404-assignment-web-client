@@ -14,9 +14,16 @@ def getHost(url):
     host = re.split('/',result)
     return host[0]
 
+def getPort(host):
+    result = re.split(':', host)
+    print result[1]
+
 def getPath(url,host):
     path = re.split(host,url)
     return path[1]
+
+h = getHost(url3)
+getPort(h)
 
 for url in urls:
     host = getHost(url)

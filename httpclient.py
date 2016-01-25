@@ -27,21 +27,29 @@ import urllib
 def help():
     print "httpclient.py [GET/POST] [URL]\n"
 
-class HTTPRequest(object):
+#probably should be called a HTTPResponse
+class HTTPResponse(object):
     def __init__(self, code=200, body=""):
         self.code = code
         self.body = body
 
 class HTTPClient(object):
-    #def get_host_port(self,url):
-
-    def parseUrl(self, url):
-        re.sub('https','',url)
-        re.search('(http|https)://(\S+?)/', string)
-        
+    
+    def get_host_port(self,url):
+        strippedUrl = re.sub('(https://)|(http://)','',url,1)
+        splitUrl = re.split('/',strippedUrl)
+        host = splitUrl[0]
+        if ':' in host:
+            splitHost = re.split(':', host)
+            host = splitHost[0]
+            port = splitHost[1]
+        else:
+            # port not specified
+            port = 80
+        return host,port
 
     def connect(self, host, port):
-        #from
+        #from lab
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientSocket.connect((host,port))
         return clientSocket
@@ -71,19 +79,34 @@ class HTTPClient(object):
         return str(buffer)
 
     def GET(self, url, args=None):
-        code = 500
+        host,port = self.get_host_port(url)
+        print host
+        print
+        print port
+        port = int(port)
+        host = 'www.google.com'
+        port = 80
+        sock = self.connect(host,port)
+        request = "GET / HTTP/1.0\r\n "
+        sock.sendall(request)
+
+        print self.recvall(sock)
+        
+        
+        
+        code = 200
         body = ""
-        return HTTPRequest(code, body)
+        return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
         code = 500
         body = ""
-        return HTTPRequest(code, body)
+        return HTTPResponse(code, body)
 
-    def command(self, url, command="GET", args=None):
-        #get host
-        #get port
-        #socket = self.connect(
+    def command(self, url,command="GET",args=None):
+        print 'url='+url
+        print 'command='+ command
+
         #call connect
         if (command == "POST"):
             return self.POST( url, args )
@@ -93,13 +116,17 @@ class HTTPClient(object):
 if __name__ == "__main__":
     client = HTTPClient()
     command = "GET"
+
+    #input: httpclient.py [GET/POST] [URL]\n
+
+    #input: httpclient.py [URL] [GET/POST]\n
     if (len(sys.argv) <= 1):
         help()
         sys.exit(1)
     elif (len(sys.argv) == 3):
         print client.command( sys.argv[1], sys.argv[2] )
     else:
-        print client.command( command, sys.argv[1] )   
+        print client.command(sys.argv[1], command)   
 
 
 # control flow:
