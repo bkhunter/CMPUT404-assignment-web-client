@@ -60,22 +60,24 @@ class HTTPClient(object):
         #return None
 
     def get_code(self, data):
-        return None
+        code = data[9:12]
+        return int(code)
 
     def get_headers(self,data):
-        response = re.split('\n', data)
-        
-        header = ''
-        body = ''
-        i = 0
-        while (i < len(response)):
-            if response[i] == '':           # found separator
-                body += response[i+1]
+        response = data.splitlines()
+        splitLine = len(response)
+        for i, line in enumerate(response):
+            if line == '':
+                splitLine = i
                 break
-            else:
-                header += response[i]+'\r\n'
-                i += 1
-        return header,body
+        code = self.get_code(response[0])
+        body = response[splitLine:]
+        header = response[:splitLine]
+
+        body = '\n'.join(body)
+        header = '\n'.join(header)
+        
+        return header,body,code
                 
     def get_body(self, data):
         return None
@@ -104,19 +106,15 @@ class HTTPClient(object):
     def GET(self, url, args=None):
         # example resource /test/demo_form.asp?name1=value1&name2=value2
         host,port,path = self.get_host_port_path(url)
-        print 'host= '+host
-        print 'path= '+path
-        print 'port= '+str(port)
+        # print 'host= '+host
+        # print 'path= '+path
+        # print 'port= '+str(port)
         sock = self.connect(host,port)
         request = self.makeGetRequest(path,host)
-        print request
         sock.sendall(request)
         data = self.recvall(sock)
-        
-        header, body = self.get_headers(data)
-        #print header
-        code = 200
-        body = body
+        header,body,code = self.get_headers(data)
+        print header
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):

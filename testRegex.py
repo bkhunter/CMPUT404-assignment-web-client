@@ -44,23 +44,31 @@ def test1():
         print '--------------'
 
 def test2():
-    response = re.split('\n', sampleResponse)
+    response = sampleResponse.splitlines()
+    print response
+    splitLine = len(response)
+    for i, line in enumerate(response):
+        print i, line
+        if line == '':
+            splitLine = i
+            break
     
-    header = ''
-    body = ''
-    i = 0
-    while (i < len(response)):
-        if response[i] == '':           # found separator
-           body += response[i+1]
-           break
-        else:
-           header += response[i]+'\r\n'
-        i += 1
+    body = response[splitLine:]
+    header = response[:splitLine]
 
-    print "header:\n"
+    body = '\n'.join(body)
+    header = '\n'.join(header)
+    
+    print 'header= '
     print header
-    print "body:\n"
+    print 'body= '
     print body
+        
+
+    # print "header:\n"
+    # print header
+    # print "body:\n"
+    # print body
 
 if __name__ == '__main__':
     #test1()
