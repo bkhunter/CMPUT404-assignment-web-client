@@ -34,9 +34,12 @@ class HTTPResponse(object):
         self.body = body
 
 class HTTPRequest():
-        def __init__(self,host):
+        def __init__(self,host,port):
             self.userLine = "User-Agent: Ben's HTTP Client\r\n"
-            self.hostLine= "Host:"+host+"\r\n"
+            if port==80:
+                self.hostLine= "Host:"+host+"\r\n"
+            else:
+                self.hostLine= "Host:"+host+':'+str(port)+"\r\n"
             self.acceptLine= "Accept: */*\r\n"
             self.connectLine = "Connection: closed\r\n"
             self.contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
@@ -123,54 +126,56 @@ class HTTPClient(object):
         return str(buffer)
 
     def GET(self, url, args=None):
-        # example resource /test/demo_form.asp?name1=value1&name2=value2
+        # I want to append any arguments to the URL
+        if args is None:
+            args = ''
+        else:
+            args = urllib.urlencode(args)
+            if '?' in url:
+                args = '&'+args
+            else:
+                args = '?'+args
+        # parse the URL for the potential port, and the host and path
         host,port,path = self.get_host_port_path(url)
-        sock = self.connect(host,port)
-        request = HTTPRequest(host)
+        path += args            # add arguments
+        sock = self.connect(host,port) # make connection
+        
+        # Form request
+        request = HTTPRequest(host,port)
         request = request.makeGet(path)
-        print 'get request!!!!!!!!!!!!!!!!!'
-        print request
+        
+        # Send request
         sock.sendall(request)
+
+        # Parse request
         data = self.recvall(sock)
         header,body,code = self.get_headers(data)
-        print 'get header'
-        print header
-        print body
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
-        print args
-        # args =  {'a':'aaaaaaaaaaaaa',
-        #         'b':'bbbbbbbbbbbbbbbbbbbbbb',
-        #         'c':'c',
-        #         'd':'012345\r67890\n2321321\n\r'}
-
         host,port,path = self.get_host_port_path(url)
         sock = self.connect(host,port)
-        request = HTTPRequest(host)
+        print 'path= ',path
+        print
+        print 'host= ',host
+        print
+        print 'port= ',port
+        request = HTTPRequest(host,port)
         request = request.makePost(path,args)
-        
-        print '--------------'
-        print 'post request'
+        print
+        print 'request= '
         print request
-        print '--------------'
+        print
+
         sock.sendall(request)
         data = self.recvall(sock)
         header,body,code = self.get_headers(data)
-        print 'post header'
-        print header
-        return HTTPResponse(code, body)
-        # POST /test/demo_form.asp HTTP/1.1
-        # Host: w3schools.com
-        # name1=value1&name2=value2
-        # http://www.w3schools.com/tags/ref_httpmethods.asp
 
-        # POST /~hindle1/1.py HTTP/1.1
-        # > User-Agent: curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3
-        # > Host: webdocs.cs.ualberta.ca
-        # > Accept: */*
-        # > Content-Length: 25
-        # > Content-Type: application/x-www-form-urlencoded
+        print 'header='
+        print header
+        print
+        print code
+        return HTTPResponse(code, body)
 
     def command(self, url,command="GET",args=None):
         if (command == "POST"):
@@ -190,7 +195,15 @@ if __name__ == "__main__":
         print client.command(sys.argv[1], command)   
 
 
-# control flow:
 
-# --> command with URL and verb
-# -- 
+        # POST /test/demo_form.asp HTTP/1.1
+        # Host: w3schools.com
+        # name1=value1&name2=value2
+        # http://www.w3schools.com/tags/ref_httpmethods.asp
+
+        # POST /~hindle1/1.py HTTP/1.1
+        # > User-Agent: curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3
+        # > Host: webdocs.cs.ualberta.ca
+        # > Accept: */*
+        # > Content-Length: 25
+        # > Content-Type: application/x-www-form-urlencoded
