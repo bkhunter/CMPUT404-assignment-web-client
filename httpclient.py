@@ -40,22 +40,21 @@ class HTTPRequest():
             self.acceptLine= "Accept: */*\r\n"
             self.connectLine = "Connection: closed\r\n"
             self.contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
+            self.req = self.userLine + self.hostLine + self.acceptLine + self.connectLine + self.contentLine
 
         def makeGet(self,path):
             initLine = "GET "+path+" HTTP/1.1\r\n"
-            get = initLine + self.userLine + self.hostLine + self.acceptLine + self.connectLine + self.contentLine + '\r\n'
-            return get
+            return initLine + self.req + '\r\n'
 
         def makePost(self,path,args):
              initLine = "POST "+path+" HTTP/1.1\r\n"
-             data = urllib.urlencode(args)
-             length = len(data)
-             lenLine = "Content-Length: "+str(length)+'\r\n'
-             argLine = data + '\r\n'
-             post = initLine + self.userLine + self.hostLine + self.acceptLine + self.connectLine + self.contentLine + lenLine +'\r\n' + argLine
-             return post
-            
-        
+             if args is None:
+                 return initLine + self.req + '\r\n'
+             else:
+                 body = urllib.urlencode(args)
+                 length = len(body)
+                 lenLine = "Content-Length: "+str(length)+'\r\n'
+                 return initLine + self.req + lenLine + '\r\n' + body
 
 class HTTPClient(object):
     
@@ -110,7 +109,6 @@ class HTTPClient(object):
             return None
         else:
             return match.group(1)
-        
 
     # read everything from the socket
     def recvall(self, sock):
@@ -124,33 +122,28 @@ class HTTPClient(object):
                 done = not part
         return str(buffer)
 
-    # def makeGetRequest(self,path,host):
-    #     initLine = "GET "+path+" HTTP/1.1\r\n"
-    #     userLine = "User-Agent: Ben's HTTP Client\r\n"
-    #     hostLine= "Host:"+host+"\r\n"
-    #     acceptLine= "Accept: */*\r\n"
-    #     connectLine = "Connection: closed\r\n"
-    #     contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
-        
-    #     return initLine+userLine+hostLine+acceptLine+connectLine+contentLine + '\r\n'
-
     def GET(self, url, args=None):
         # example resource /test/demo_form.asp?name1=value1&name2=value2
         host,port,path = self.get_host_port_path(url)
         sock = self.connect(host,port)
         request = HTTPRequest(host)
         request = request.makeGet(path)
+        print 'get request!!!!!!!!!!!!!!!!!'
+        print request
         sock.sendall(request)
         data = self.recvall(sock)
         header,body,code = self.get_headers(data)
+        print 'get header'
         print header
+        print body
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
-        args =  {'a':'aaaaaaaaaaaaa',
-                'b':'bbbbbbbbbbbbbbbbbbbbbb',
-                'c':'c',
-                'd':'012345\r67890\n2321321\n\r'}
+        print args
+        # args =  {'a':'aaaaaaaaaaaaa',
+        #         'b':'bbbbbbbbbbbbbbbbbbbbbb',
+        #         'c':'c',
+        #         'd':'012345\r67890\n2321321\n\r'}
 
         host,port,path = self.get_host_port_path(url)
         sock = self.connect(host,port)
@@ -158,9 +151,14 @@ class HTTPClient(object):
         request = request.makePost(path,args)
         
         print '--------------'
+        print 'post request'
         print request
-        code = 500
-        body = ""
+        print '--------------'
+        sock.sendall(request)
+        data = self.recvall(sock)
+        header,body,code = self.get_headers(data)
+        print 'post header'
+        print header
         return HTTPResponse(code, body)
         # POST /test/demo_form.asp HTTP/1.1
         # Host: w3schools.com
@@ -175,11 +173,6 @@ class HTTPClient(object):
         # > Content-Type: application/x-www-form-urlencoded
 
     def command(self, url,command="GET",args=None):
-        print 'url='+url
-        print 'command='+ command
-        if args is None:
-            args = self.getArgs(url)
-
         if (command == "POST"):
             return self.POST( url, args )
         else:
