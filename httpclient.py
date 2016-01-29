@@ -33,6 +33,30 @@ class HTTPResponse(object):
         self.code = code
         self.body = body
 
+class HTTPRequest():
+        def __init__(self,host):
+            self.userLine = "User-Agent: Ben's HTTP Client\r\n"
+            self.hostLine= "Host:"+host+"\r\n"
+            self.acceptLine= "Accept: */*\r\n"
+            self.connectLine = "Connection: closed\r\n"
+            self.contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
+
+        def makeGet(self,path):
+            initLine = "GET "+path+" HTTP/1.1\r\n"
+            get = initLine + self.userLine + self.hostLine + self.acceptLine + self.connectLine + self.contentLine + '\r\n'
+            return get
+
+        def makePost(self,path,args):
+             initLine = "POST "+path+" HTTP/1.1\r\n"
+             data = urllib.urlencode(args)
+             length = len(data)
+             lenLine = "Content-Length: "+str(length)+'\r\n'
+             argLine = data + '\r\n'
+             post = initLine + self.userLine + self.hostLine + self.acceptLine + self.connectLine + self.contentLine + lenLine +'\r\n' + argLine
+             return post
+            
+        
+
 class HTTPClient(object):
     
     def get_host_port_path(self,url):
@@ -55,12 +79,13 @@ class HTTPClient(object):
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientSocket.connect((host,port))
         return clientSocket
-        
-        # use sockets!
-        #return None
 
     def get_code(self, data):
-        code = data[9:12]
+        match = re.match(r'.* (\d\d\d) .*',data)
+        if match is None:
+            raise ValueError('code parsed is not HTTP compliant. Could not parse HTTP code in "%s"' %data)
+        else:
+            code = match.group(1)
         return int(code)
 
     def get_headers(self,data):
@@ -78,9 +103,14 @@ class HTTPClient(object):
         header = '\n'.join(header)
         
         return header,body,code
-                
-    def get_body(self, data):
-        return None
+
+    def getArgs(self,url):
+        match = re.match(r'.*[?](.*)',url)
+        if match is None:
+            return None
+        else:
+            return match.group(1)
+        
 
     # read everything from the socket
     def recvall(self, sock):
@@ -94,23 +124,22 @@ class HTTPClient(object):
                 done = not part
         return str(buffer)
 
-    def makeGetRequest(self,path,host):
-        initLine = "GET "+path+" HTTP/1.1\r\n"
-        hostLine= "Host:"+host+"\r\n"
-        acceptLine= "Accept: */*\r\n"
-        connectLine = "Connection: closed\r\n"
-        contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
+    # def makeGetRequest(self,path,host):
+    #     initLine = "GET "+path+" HTTP/1.1\r\n"
+    #     userLine = "User-Agent: Ben's HTTP Client\r\n"
+    #     hostLine= "Host:"+host+"\r\n"
+    #     acceptLine= "Accept: */*\r\n"
+    #     connectLine = "Connection: closed\r\n"
+    #     contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
         
-        return initLine+hostLine+acceptLine+connectLine+contentLine + '\r\n'
+    #     return initLine+userLine+hostLine+acceptLine+connectLine+contentLine + '\r\n'
 
     def GET(self, url, args=None):
         # example resource /test/demo_form.asp?name1=value1&name2=value2
         host,port,path = self.get_host_port_path(url)
-        # print 'host= '+host
-        # print 'path= '+path
-        # print 'port= '+str(port)
         sock = self.connect(host,port)
-        request = self.makeGetRequest(path,host)
+        request = HTTPRequest(host)
+        request = request.makeGet(path)
         sock.sendall(request)
         data = self.recvall(sock)
         header,body,code = self.get_headers(data)
@@ -118,6 +147,18 @@ class HTTPClient(object):
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
+        args =  {'a':'aaaaaaaaaaaaa',
+                'b':'bbbbbbbbbbbbbbbbbbbbbb',
+                'c':'c',
+                'd':'012345\r67890\n2321321\n\r'}
+
+        host,port,path = self.get_host_port_path(url)
+        sock = self.connect(host,port)
+        request = HTTPRequest(host)
+        request = request.makePost(path,args)
+        
+        print '--------------'
+        print request
         code = 500
         body = ""
         return HTTPResponse(code, body)
@@ -126,11 +167,19 @@ class HTTPClient(object):
         # name1=value1&name2=value2
         # http://www.w3schools.com/tags/ref_httpmethods.asp
 
+        # POST /~hindle1/1.py HTTP/1.1
+        # > User-Agent: curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3
+        # > Host: webdocs.cs.ualberta.ca
+        # > Accept: */*
+        # > Content-Length: 25
+        # > Content-Type: application/x-www-form-urlencoded
+
     def command(self, url,command="GET",args=None):
         print 'url='+url
         print 'command='+ command
+        if args is None:
+            args = self.getArgs(url)
 
-        #call connect
         if (command == "POST"):
             return self.POST( url, args )
         else:
@@ -139,10 +188,6 @@ class HTTPClient(object):
 if __name__ == "__main__":
     client = HTTPClient()
     command = "GET"
-
-    #input: httpclient.py [GET/POST] [URL]\n
-
-    #input: httpclient.py [URL] [GET/POST]\n
     if (len(sys.argv) <= 1):
         help()
         sys.exit(1)
