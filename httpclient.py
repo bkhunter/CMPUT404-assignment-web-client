@@ -46,34 +46,33 @@ class HTTPResponse(object):
 
 # Class for handling the formation of HTTP requests
 class HTTPRequest():
-        def __init__(self,host,port):
-            self.userLine = "User-Agent: Ben's HTTP Client\r\n"
-            if port==80:
-                self.hostLine= "Host:"+host+"\r\n"
-            else:
-                # must specify port if it not 80
-                self.hostLine= "Host:"+host+':'+str(port)+"\r\n"
-            self.acceptLine= "Accept: */*\r\n"
-            self.connectLine = "Connection: closed\r\n"
-            self.contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
-            self.req = self.userLine + self.hostLine + self.acceptLine + self.connectLine + self.contentLine
+    def __init__(self,host,port):
+        self.userLine = "User-Agent: Ben's HTTP Client\r\n"
+        if port==80:
+            self.hostLine= "Host:"+host+"\r\n"
+        else:
+            # must specify port if it not 80
+            self.hostLine= "Host:"+host+':'+str(port)+"\r\n"
+        self.acceptLine= "Accept: */*\r\n"
+        self.connectLine = "Connection: closed\r\n"
+        self.contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
+        self.req = self.userLine + self.hostLine + self.acceptLine + self.connectLine + self.contentLine
 
-        # form get request
-        def makeGet(self,path):
-            initLine = "GET "+path+" HTTP/1.1\r\n"
+    # form get request
+    def makeGet(self,path):
+        initLine = "GET "+path+" HTTP/1.1\r\n"
+        return initLine + self.req + '\r\n'
+
+    # form Post request
+    def makePost(self,path,args):
+        initLine = "POST "+path+" HTTP/1.1\r\n"
+        if args is None:
             return initLine + self.req + '\r\n'
-
-        # form Post request
-        def makePost(self,path,args):
-             initLine = "POST "+path+" HTTP/1.1\r\n"
-             if args is None:
-                 return initLine + self.req + '\r\n'
-             else:
-                 body = urllib.urlencode(args)
-                 length = len(body)
-                 lenLine = "Content-Length: "+str(length)+'\r\n'
-                 return initLine + self.req + lenLine + '\r\n' + body
-
+        else:
+            body = urllib.urlencode(args)
+            length = len(body)
+            lenLine = "Content-Length: "+str(length)+'\r\n'
+        return initLine + self.req + lenLine + '\r\n' + body
 
 class HTTPClient(object):
     
