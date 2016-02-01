@@ -72,7 +72,7 @@ class HTTPRequest():
             body = urllib.urlencode(args)
             length = len(body)
             lenLine = "Content-Length: "+str(length)+'\r\n'
-        return initLine + self.req + lenLine + '\r\n' + body
+            return initLine + self.req + lenLine + '\r\n' + body
 
 class HTTPClient(object):
     
