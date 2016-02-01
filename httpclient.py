@@ -24,15 +24,18 @@ import re
 # you may use urllib to encode data appropriately
 import urllib
 
-# Parameter reversed from original
+# Parameter reversed from skeleton
 def help():
     print "httpclient.py [URL] [GET/POST]\n"
 
-# Changed name
+# Changed name from skeleton
 class HTTPResponse(object):
     def __init__(self, code=200, body=""):
         self.code = code
         self.body = body
+    def __str__(self):
+        codeStr = '\n'+'HTTP Response Code: ' +str(self.code) + '\n'
+        return codeStr + self.body
 
 # Class for handling the formation of HTTP requests
 class HTTPRequest():
@@ -133,6 +136,8 @@ class HTTPClient(object):
     # encoded and appended to the path
     def GET(self, url, args=None):
 
+        #args = {'a' : '☃'}
+
         # I want to append any arguments to the URL
         if args is None:
             args = ''
@@ -145,6 +150,7 @@ class HTTPClient(object):
 
         # parse the URL for the potential port, and the host and path
         host,port,path = self.get_host_port_path(url)
+
         path += args            # add arguments
         sock = self.connect(host,port) # make connection
         
