@@ -8,17 +8,17 @@ See requirements.org (plain-text) for a description of the project.
 Make a simple web-client like curl or wget
 
 Collaboration
-========================
+----------------------------------------------
 
 For this assignment I consulted and collaborated with Boyan Peychoff  
 
 
 Contributors / Licensing
-========================
+----------------------------------------------
 
 Contributions made by Ben Hunter are licensed under the Apache 2 license as follows:
+========================
 
-----------------------------------------------
    Copyright 2016 Ben Hunter
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ Contributions made by Ben Hunter are licensed under the Apache 2 license as foll
    See the License for the specific language governing permissions and
    limitations under the License.
 
-----------------------------------------------
+========================
 
 Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle.
 
@@ -45,7 +45,7 @@ Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
 Resources
-========================
+----------------------------------------------
 **HTTP:**
  * http://www.w3schools.com/tags/ref_httpmethods.asp
  * users philhag, superfell, @http://stackoverflow.com/questions/3364144/is-port-number-required-in-http-host-header-parameter

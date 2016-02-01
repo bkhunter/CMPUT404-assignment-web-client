@@ -22,6 +22,7 @@
 # Do not use urllib's HTTP GET and POST mechanisms.
 # Write your own HTTP GET and POST
 # The point is to understand what you have to send and get experience with it
+# ☃
 
 import sys
 import socket
@@ -29,7 +30,7 @@ import re
 # you may use urllib to encode data appropriately
 import urllib
 
-# Parameter reversed from skeleton
+# Parameters reversed from skeleton
 def help():
     print "httpclient.py [URL] [GET/POST]\n"
 
@@ -40,7 +41,8 @@ class HTTPResponse(object):
         self.body = body
     def __str__(self):
         codeStr = '\n'+'HTTP Response Code: ' +str(self.code) + '\n'
-        return codeStr + self.body
+        bodyStr = 'Body:\n'+self.body
+        return codeStr + bodyStr
 
 # Class for handling the formation of HTTP requests
 class HTTPRequest():
@@ -140,8 +142,6 @@ class HTTPClient(object):
     # and recieves and parses the response.If there are arguments, they are 
     # encoded and appended to the path
     def GET(self, url, args=None):
-
-        #args = {'a' : '☃'}
 
         # I want to append any arguments to the URL
         if args is None:
