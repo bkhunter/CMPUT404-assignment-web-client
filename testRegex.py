@@ -70,6 +70,13 @@ def test2():
     # print "body:\n"
     # print body
 
+def getArgs(self,url):
+    match = re.match(r'.*[?](.*)',url)
+    if match is None:
+        return None
+    else:
+        return match.group(1)
+
 if __name__ == '__main__':
     #test1()
     test2()

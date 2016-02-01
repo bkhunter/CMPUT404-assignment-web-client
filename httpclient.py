@@ -24,31 +24,36 @@ import re
 # you may use urllib to encode data appropriately
 import urllib
 
+# Parameter reversed from original
 def help():
     print "httpclient.py [URL] [GET/POST]\n"
 
-#probably should be called a HTTPResponse
+# Changed name
 class HTTPResponse(object):
     def __init__(self, code=200, body=""):
         self.code = code
         self.body = body
 
+# Class for handling the formation of HTTP requests
 class HTTPRequest():
         def __init__(self,host,port):
             self.userLine = "User-Agent: Ben's HTTP Client\r\n"
             if port==80:
                 self.hostLine= "Host:"+host+"\r\n"
             else:
+                # must specify port if it not 80
                 self.hostLine= "Host:"+host+':'+str(port)+"\r\n"
             self.acceptLine= "Accept: */*\r\n"
             self.connectLine = "Connection: closed\r\n"
             self.contentLine = "Content-Type: application/x-www-form-urlencoded\r\n"
             self.req = self.userLine + self.hostLine + self.acceptLine + self.connectLine + self.contentLine
 
+        # form get request
         def makeGet(self,path):
             initLine = "GET "+path+" HTTP/1.1\r\n"
             return initLine + self.req + '\r\n'
 
+        # form Post request
         def makePost(self,path,args):
              initLine = "POST "+path+" HTTP/1.1\r\n"
              if args is None:
@@ -59,8 +64,11 @@ class HTTPRequest():
                  lenLine = "Content-Length: "+str(length)+'\r\n'
                  return initLine + self.req + lenLine + '\r\n' + body
 
+
 class HTTPClient(object):
     
+    # using regular expressions and string manipulation, parses
+    # the URL to extract the host, port, and path
     def get_host_port_path(self,url):
         strippedUrl = re.sub('(https://)|(http://)','',url,1)
         splitUrl = re.split('/',strippedUrl)
@@ -82,6 +90,7 @@ class HTTPClient(object):
         clientSocket.connect((host,port))
         return clientSocket
 
+    # Get the HTTP response code, raises ValueError if error in input
     def get_code(self, data):
         match = re.match(r'.* (\d\d\d) .*',data)
         if match is None:
@@ -90,7 +99,8 @@ class HTTPClient(object):
             code = match.group(1)
         return int(code)
 
-    def get_headers(self,data):
+    # Parses socket data as a string to extract the header, body and code
+    def parseResponse(self,data):
         response = data.splitlines()
         splitLine = len(response)
         for i, line in enumerate(response):
@@ -106,13 +116,6 @@ class HTTPClient(object):
         
         return header,body,code
 
-    def getArgs(self,url):
-        match = re.match(r'.*[?](.*)',url)
-        if match is None:
-            return None
-        else:
-            return match.group(1)
-
     # read everything from the socket
     def recvall(self, sock):
         buffer = bytearray()
@@ -125,7 +128,11 @@ class HTTPClient(object):
                 done = not part
         return str(buffer)
 
+    # Creates an HTTP GET request for the specified URL, sends the request,
+    # and recieves and parses the response.If there are arguments, they are 
+    # encoded and appended to the path
     def GET(self, url, args=None):
+
         # I want to append any arguments to the URL
         if args is None:
             args = ''
@@ -135,46 +142,41 @@ class HTTPClient(object):
                 args = '&'+args
             else:
                 args = '?'+args
+
         # parse the URL for the potential port, and the host and path
         host,port,path = self.get_host_port_path(url)
         path += args            # add arguments
         sock = self.connect(host,port) # make connection
         
         # Form request
-        request = HTTPRequest(host,port)
-        request = request.makeGet(path)
+        requestObject = HTTPRequest(host,port)
+        request = requestObject.makeGet(path)
         
         # Send request
         sock.sendall(request)
 
-        # Parse request
+        # Parse response
         data = self.recvall(sock)
-        header,body,code = self.get_headers(data)
+        header,body,code = self.parseResponse(data)
         return HTTPResponse(code, body)
 
+    # Creates an HTTP POST request for the URL and arguments specified,
+    # sends the request, and parses the response
     def POST(self, url, args=None):
-        host,port,path = self.get_host_port_path(url)
-        sock = self.connect(host,port)
-        print 'path= ',path
-        print
-        print 'host= ',host
-        print
-        print 'port= ',port
+
+        host,port,path = self.get_host_port_path(url) # parse path
+        sock = self.connect(host,port)                # make connection
+        
+        # form request
         request = HTTPRequest(host,port)
         request = request.makePost(path,args)
-        print
-        print 'request= '
-        print request
-        print
 
+        # send request
         sock.sendall(request)
-        data = self.recvall(sock)
-        header,body,code = self.get_headers(data)
 
-        print 'header='
-        print header
-        print
-        print code
+        # parse response
+        data = self.recvall(sock)
+        header,body,code = self.parseResponse(data)
         return HTTPResponse(code, body)
 
     def command(self, url,command="GET",args=None):
