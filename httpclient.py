@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
+
 # Copyright 2013 Abram Hindle
+# Copyright 2016 Ben Hunter
+#
+# See README For detailed licensing information regarding Ben Hunter
+# and collaboration
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -201,17 +206,3 @@ if __name__ == "__main__":
         print client.command( sys.argv[1], sys.argv[2] )
     else:
         print client.command(sys.argv[1], command)   
-
-
-
-        # POST /test/demo_form.asp HTTP/1.1
-        # Host: w3schools.com
-        # name1=value1&name2=value2
-        # http://www.w3schools.com/tags/ref_httpmethods.asp
-
-        # POST /~hindle1/1.py HTTP/1.1
-        # > User-Agent: curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3
-        # > Host: webdocs.cs.ualberta.ca
-        # > Accept: */*
-        # > Content-Length: 25
-        # > Content-Type: application/x-www-form-urlencoded
